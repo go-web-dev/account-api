@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/steevehook/expenses-rest-api/logging"
+	"github.com/github.com/steevehook/account-api/logging"
 	"go.uber.org/zap"
 )
 

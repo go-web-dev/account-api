@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/steevehook/expenses-rest-api/logging"
-	"github.com/steevehook/expenses-rest-api/models"
+	"github.com/github.com/steevehook/account-api/logging"
+	"github.com/github.com/steevehook/account-api/models"
 )
 
 const (

@@ -2,16 +2,13 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/steevehook/expenses-rest-api/logging"
-	"github.com/steevehook/expenses-rest-api/models"
+	"github.com/github.com/steevehook/account-api/logging"
+	"github.com/github.com/steevehook/account-api/models"
 )
 
 // routeParam fetches params from context and converts it into julienschmidt/httprouter.Params struct
@@ -45,45 +42,4 @@ func parseBody(r *http.Request, v interface{}) error {
 		}
 	}
 	return nil
-}
-
-// parseIDParam parses id route param and validates it
-func parseIDParam(r *http.Request) (string, error) {
-	id := routeParam(r, idRouteParam)
-	_, err := uuid.Parse(id)
-	if err != nil {
-		e := models.FormatValidationError{
-			Message: fmt.Sprintf("invalid uuid: %s", id),
-		}
-		return "", e
-	}
-	return id, nil
-}
-
-// parseIDsParam parses ids route param and validates it
-func parseIDsParam(r *http.Request) ([]string, error) {
-	// approximately max 50 UUIDs in URL
-	ids := strings.Split(routeParam(r, idsRouteParam), ",")
-	for _, id := range ids {
-		_, err := uuid.Parse(id)
-		if err != nil {
-			e := models.FormatValidationError{
-				Message: fmt.Sprintf("invalid uuid: %s", id),
-			}
-			return []string{}, e
-		}
-	}
-	return dedupe(ids), nil
-}
-
-// dedupe parses a list of strings and removes duplicates
-func dedupe(values []string) []string {
-	unique, res := map[string]string{}, make([]string, 0)
-	for _, v := range values {
-		unique[v] = v
-	}
-	for _, v := range unique {
-		res = append(res, v)
-	}
-	return res
 }

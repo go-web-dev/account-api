@@ -3,9 +3,9 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/steevehook/expenses-rest-api/logging"
-	"github.com/steevehook/expenses-rest-api/models"
-	"github.com/steevehook/expenses-rest-api/transport"
+	"github.com/github.com/steevehook/account-api/logging"
+	"github.com/github.com/steevehook/account-api/models"
+	"github.com/github.com/steevehook/account-api/transport"
 )
 
 // JSONBody rejects endpoints that have missing application/json content type

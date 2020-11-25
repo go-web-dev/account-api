@@ -6,13 +6,13 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/steevehook/expenses-rest-api/app"
+	"github.com/github.com/steevehook/account-api/app"
 )
 
 func main() {
 	configPath := flag.String(
 		"config",
-		"./config/app-config.yaml",
+		"./config/config.yaml",
 		"Path to the application config file",
 	)
 	flag.Parse()

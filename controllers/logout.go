@@ -5,7 +5,7 @@ import (
 )
 
 type logoutter interface {
-	Signup()
+	Logout()
 }
 
 func logout(service logoutter) http.Handler {

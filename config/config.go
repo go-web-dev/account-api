@@ -7,8 +7,6 @@ import (
 
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-
-	"github.com/steevehook/expenses-rest-api/models"
 )
 
 const (
@@ -16,12 +14,9 @@ const (
 	appReadTimeout     = "app.read_timeout"
 	appWriteTimeout    = "app.write_timeout"
 	appShutdownTimeout = "app.shutdown_timeout"
-	appDBType          = "app.db_type"
 
 	loggingLevel  = "logging.level"
 	loggingOutput = "logging.output"
-
-	boltDBFileName = "boltdb.filename"
 
 	mariaDBURL                = "mariadb.url"
 	mariaDBMaxOpenConnections = "mariadb.max_open_connections"
@@ -47,11 +42,7 @@ func Init(path string) (*Manager, error) {
 		return nil, err
 	}
 
-	requiredProps, err := configManager.requiredProps()
-	if err != nil {
-		return nil, err
-	}
-	err = configManager.checkRequiredProps(requiredProps)
+	err = configManager.checkRequiredProps(configManager.requiredProps())
 	if err != nil {
 		return nil, err
 	}
@@ -76,11 +67,6 @@ func (m *Manager) AppWriteTimeout() time.Duration {
 // AppShutdownTimeout retrieves the application server shutdown timeout from configuration file
 func (m *Manager) AppShutdownTimeout() time.Duration {
 	return m.CfgReader.GetDuration(appShutdownTimeout)
-}
-
-// AppShutdownTimeout retrieves the application server shutdown timeout from configuration file
-func (m *Manager) AppDBType() string {
-	return m.CfgReader.GetString(appDBType)
 }
 
 // LoggingLevel retrieves the application logging level from configuration file
@@ -113,18 +99,12 @@ func (m *Manager) MariaDBConnMaxLifetime() time.Duration {
 	return m.CfgReader.GetDuration(mariaDBConnMaxLifetime)
 }
 
-// BoltDBFileName retrieves the filename for boltdb
-func (m *Manager) BoltDBFileName() string {
-	return m.CfgReader.GetString(boltDBFileName)
-}
-
 // setDefaults sets application default configs
 func (m *Manager) setDefaults() {
 	m.CfgReader.SetDefault(appListen, "0.0.0.0:8080")
 	m.CfgReader.SetDefault(appReadTimeout, 10*time.Second)
 	m.CfgReader.SetDefault(appWriteTimeout, 10*time.Second)
 	m.CfgReader.SetDefault(appShutdownTimeout, 15*time.Second)
-	m.CfgReader.SetDefault(appDBType, models.BoltDBType)
 	m.CfgReader.SetDefault(loggingLevel, zap.InfoLevel.String())
 	m.CfgReader.SetDefault(loggingOutput, []string{"app.log"})
 	m.CfgReader.SetDefault(mariaDBMaxOpenConnections, 100)
@@ -133,18 +113,10 @@ func (m *Manager) setDefaults() {
 }
 
 // requiredProps retrieves the list of required config props
-func (m *Manager) requiredProps() (map[string]func() string, error) {
-	requiredProps := map[string]func() string{}
-	switch m.AppDBType() {
-	case models.BoltDBType:
-		requiredProps[boltDBFileName] = m.BoltDBFileName
-	case models.MariaDBType:
-		requiredProps[mariaDBURL] = m.MariaDBUrl
-	default:
-		return nil, fmt.Errorf("%s can only be: %s or %s", appDBType, models.BoltDBType, models.MariaDBType)
+func (m *Manager) requiredProps() map[string]func() string {
+	return map[string]func() string{
+		mariaDBURL: m.MariaDBUrl,
 	}
-
-	return requiredProps, nil
 }
 
 // checkRequiredProps checks if all required props are present in config file

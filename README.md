@@ -1,4 +1,4 @@
-# Expenses OAuth2 IAM REST API
+# Accounts REST API (OAuth2) Server
 
 This application is a fully featured REST API written in Go
 

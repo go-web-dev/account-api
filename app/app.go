@@ -10,19 +10,18 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/steevehook/expenses-rest-api/config"
-	"github.com/steevehook/expenses-rest-api/controllers"
-	"github.com/steevehook/expenses-rest-api/logging"
-	"github.com/steevehook/expenses-rest-api/models"
-	"github.com/steevehook/expenses-rest-api/repositories"
-	"github.com/steevehook/expenses-rest-api/services"
+	"github.com/github.com/steevehook/account-api/config"
+	"github.com/github.com/steevehook/account-api/controllers"
+	"github.com/github.com/steevehook/account-api/logging"
+	"github.com/github.com/steevehook/account-api/repositories"
+	"github.com/github.com/steevehook/account-api/services"
 )
 
 type App struct {
+	db       repositories.DBDriver
 	stopOnce sync.Once
 	Server   *http.Server
 	Cfg      *config.Manager
-	dbCloser repositories.Closer
 }
 
 // Init initializes the application
@@ -35,32 +34,25 @@ func Init(configPath string) (*App, error) {
 		return nil, fmt.Errorf("could not initialize logger: %v", err)
 	}
 
-	var expensesRepo repositories.Expenses
-	switch configManager.AppDBType() {
-	case models.BoltDBType:
-		expensesRepo, err = repositories.NewBoltDriver(configManager.BoltDBFileName())
-		if err != nil {
-			return nil, err
-		}
-	case models.MariaDBType:
-		dbSettings := repositories.MariaDBSettings{
-			URL:                configManager.MariaDBUrl(),
-			MaxOpenConnections: configManager.MariaDBMaxOpenConnections(),
-			MaxIdleConnections: configManager.MariaDBMaxIdleConnections(),
-			ConnMaxLifetime:    configManager.MariaDBConnMaxLifetime(),
-		}
-		expensesRepo, err = repositories.NewMariaDBDriver(dbSettings)
-		if err != nil {
-			return nil, err
-		}
+	dbSettings := repositories.MariaDBSettings{
+		URL:                configManager.MariaDBUrl(),
+		MaxOpenConnections: configManager.MariaDBMaxOpenConnections(),
+		MaxIdleConnections: configManager.MariaDBMaxIdleConnections(),
+		ConnMaxLifetime:    configManager.MariaDBConnMaxLifetime(),
+	}
+	db, err := repositories.NewMariaDBDriver(dbSettings)
+	if err != nil {
+		return nil, err
 	}
 
+	accountsRepo := repositories.NewAccounts(db)
+	authService := services.NewAuth(accountsRepo)
+
 	routerCfg := controllers.RouterConfig{
-		ExpensesSvc: services.Expenses{
-			ExpensesRepo: expensesRepo,
-		},
+		AuthSvc: authService,
 	}
 	app := &App{
+		db:  db,
 		Cfg: configManager,
 		Server: &http.Server{
 			Addr:         configManager.AppListen(),
@@ -69,7 +61,6 @@ func Init(configPath string) (*App, error) {
 			WriteTimeout: configManager.AppWriteTimeout(),
 			ErrorLog:     logging.HTTPServerLogger(),
 		},
-		dbCloser: expensesRepo,
 	}
 	return app, nil
 }
@@ -102,13 +93,14 @@ func (a *App) Stop() error {
 			err = e
 			return
 		}
-
 		logging.Logger.Info("http server was shut down")
 
-		err = a.dbCloser.Close()
+		logging.Logger.Info("shutting down the db server")
+		err = a.db.Close()
 		if err != nil {
-			logging.Logger.Error("could not stop db", zap.Error(err))
+			logging.Logger.Error("could not stop the db server", zap.Error(err))
 		}
+		logging.Logger.Info("db server was shut down")
 	})
 	return err
 }

@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/steevehook/expenses-rest-api/config"
+	"github.com/github.com/steevehook/account-api/config"
 )
 
 // Logger represents application logger
