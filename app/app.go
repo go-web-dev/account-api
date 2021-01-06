@@ -17,6 +17,7 @@ import (
 	"github.com/github.com/steevehook/account-api/services"
 )
 
+// App represents the main application
 type App struct {
 	db       repositories.DBDriver
 	stopOnce sync.Once
@@ -30,7 +31,7 @@ func Init(configPath string) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize app config: %v", err)
 	}
-	if err := logging.Init(configManager); err != nil {
+	if err = logging.Init(configManager); err != nil {
 		return nil, fmt.Errorf("could not initialize logger: %v", err)
 	}
 

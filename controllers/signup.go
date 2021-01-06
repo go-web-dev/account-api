@@ -3,21 +3,22 @@ package controllers
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/lestrrat-go/jwx/jws"
 	"github.com/lestrrat-go/jwx/jwt"
-	"log"
-	"net/http"
-	"os"
+
+	"github.com/github.com/steevehook/account-api/models"
 )
 
 type signupper interface {
-	Signup()
+	Signup(credentials models.Credentials)
 }
 
 func signup(service signupper) http.Handler {
@@ -89,30 +90,4 @@ func signup(service signupper) http.Handler {
 		//fmt.Println("kid", jwkKey.PrivateParams())
 		fmt.Println("jwk", string(signed))
 	})
-}
-
-func ExportRsaPrivateKeyAsPemStr(privkey *rsa.PrivateKey) string {
-	privkey_bytes := x509.MarshalPKCS1PrivateKey(privkey)
-	privkey_pem := pem.EncodeToMemory(
-		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: privkey_bytes,
-		},
-	)
-	return string(privkey_pem)
-}
-
-func ExportRsaPublicKeyAsPemStr(pubkey *rsa.PublicKey) (string, error) {
-	pubkey_bytes, err := x509.MarshalPKIXPublicKey(pubkey)
-	if err != nil {
-		return "", err
-	}
-	pubkey_pem := pem.EncodeToMemory(
-		&pem.Block{
-			Type:  "RSA PUBLIC KEY",
-			Bytes: pubkey_bytes,
-		},
-	)
-
-	return string(pubkey_pem), nil
 }

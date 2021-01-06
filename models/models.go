@@ -4,6 +4,12 @@ import (
 	"time"
 )
 
+// Credentials represents the user credentials
+type Credentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 // Account represents the account model
 type Account struct {
 	ID         string    `json:"id" db:"id"`

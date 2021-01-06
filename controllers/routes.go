@@ -9,12 +9,14 @@ import (
 	"github.com/github.com/steevehook/account-api/middleware"
 )
 
+// AuthService represents the authentication service
 type AuthService interface {
 	loginner
 	logoutter
 	signupper
 }
 
+// RouterConfig represents the application router config
 type RouterConfig struct {
 	AuthSvc AuthService
 }

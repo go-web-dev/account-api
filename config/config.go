@@ -84,7 +84,7 @@ func (m *Manager) MariaDBUrl() string {
 	return m.CfgReader.GetString(mariaDBURL)
 }
 
-// DBMaxOpenConnections retrieves the mysql database amount of max open connections
+// MariaDBMaxOpenConnections retrieves the mysql database amount of max open connections
 func (m *Manager) MariaDBMaxOpenConnections() int {
 	return m.CfgReader.GetInt(mariaDBMaxOpenConnections)
 }

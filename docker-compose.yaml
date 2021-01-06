@@ -14,5 +14,15 @@ services:
     ports:
       - "3306:3306"
 
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --requirepass pwd
+
 volumes:
   mariadb-data:
+  redis-data:
