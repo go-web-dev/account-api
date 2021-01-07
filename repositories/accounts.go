@@ -47,8 +47,12 @@ func NewAccounts(db DBDriver, cache CacheDriver) Accounts {
 func (repo Accounts) GetPrivateKey() (*rsa.PrivateKey, error) {
 	// generate new private key on each app startup
 	// save the old key and the new key and only sign with the new key in Redis
-	// save all public keys under 'keys' in Redis
-	// decided whether key set needs to return the entire *jwk.Set aka the entire public key info
+	// save all public keys under 'keys' aka *jwk.Set in Redis
+	// create a middleware library
+
+	// add client_id, client_secret, grant_type and refresh_token possibilities
+	// add refresh token rotation
+	// add refresh token throttling
 
 	logger := logging.Logger
 	ctx := context.Background()
@@ -74,6 +78,25 @@ func (repo Accounts) GetPrivateKey() (*rsa.PrivateKey, error) {
 			return nil, err
 		}
 		return &privateKey, nil
+
+		// raw here is the raw jwt string
+		//key, err := keyProvider.LookupKey(signature.ProtectedHeaders())
+		//if err != nil {
+		//	return Token{}, err
+		//}
+		//
+		//payload, err := jws.Verify([]byte(raw), signature.ProtectedHeaders().Algorithm(), key)
+		//if err != nil {
+		//	return Token{}, err
+		//}
+		//
+		//token := New()
+		//err = token.UnmarshalJSON(payload)
+		//if err != nil {
+		//	return Token{}, err
+		//}
+		//
+		//return token, nil
 
 		//b, _ := json.Marshal(jwkKey)
 		//fmt.Println("JWK", string(b))
