@@ -53,3 +53,11 @@ func (e ResourceNotFoundError) Error() string {
 	}
 	return e.Message
 }
+
+// ServiceNotAvailableError represents the service unavailable http error
+type ServiceNotAvailableError struct {
+}
+
+func (e ServiceNotAvailableError) Error() string {
+	return "service not available"
+}

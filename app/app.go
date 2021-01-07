@@ -20,6 +20,7 @@ import (
 // App represents the main application
 type App struct {
 	db       repositories.DBDriver
+	cache    repositories.CacheDriver
 	stopOnce sync.Once
 	Server   *http.Server
 	Cfg      *config.Manager
@@ -35,26 +36,36 @@ func Init(configPath string) (*App, error) {
 		return nil, fmt.Errorf("could not initialize logger: %v", err)
 	}
 
-	dbSettings := repositories.MariaDBSettings{
+	mariaDBSettings := repositories.MariaDBSettings{
 		URL:                configManager.MariaDBUrl(),
 		MaxOpenConnections: configManager.MariaDBMaxOpenConnections(),
 		MaxIdleConnections: configManager.MariaDBMaxIdleConnections(),
 		ConnMaxLifetime:    configManager.MariaDBConnMaxLifetime(),
 	}
-	db, err := repositories.NewMariaDBDriver(dbSettings)
+	mariaDB, err := repositories.NewMariaDBDriver(mariaDBSettings)
 	if err != nil {
 		return nil, err
 	}
 
-	accountsRepo := repositories.NewAccounts(db)
+	redisSettings := repositories.RedisSettings{
+		URL:      configManager.RedisURL(),
+		Password: configManager.RedisPassword(),
+	}
+	redisDB, err := repositories.NewRedisDriver(redisSettings)
+	if err != nil {
+		return nil, err
+	}
+
+	accountsRepo := repositories.NewAccounts(mariaDB, redisDB)
 	authService := services.NewAuth(accountsRepo)
 
 	routerCfg := controllers.RouterConfig{
 		AuthSvc: authService,
 	}
 	app := &App{
-		db:  db,
-		Cfg: configManager,
+		db:    mariaDB,
+		cache: redisDB,
+		Cfg:   configManager,
 		Server: &http.Server{
 			Addr:         configManager.AppListen(),
 			Handler:      controllers.NewRouter(routerCfg),
@@ -101,7 +112,14 @@ func (a *App) Stop() error {
 		if err != nil {
 			logging.Logger.Error("could not stop the db server", zap.Error(err))
 		}
-		logging.Logger.Info("db server was shut down")
+		logging.Logger.Info("maria db server was shut down")
+
+		logging.Logger.Info("shutting down the cache server")
+		err = a.cache.Close()
+		if err != nil {
+			logging.Logger.Error("could not stop the cache server", zap.Error(err))
+		}
+		logging.Logger.Info("cache server was shut down")
 	})
 	return err
 }

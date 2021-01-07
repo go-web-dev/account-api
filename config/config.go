@@ -22,6 +22,9 @@ const (
 	mariaDBMaxOpenConnections = "mariadb.max_open_connections"
 	mariaDBMaxIdleConnections = "mariadb.max_idle_connections"
 	mariaDBConnMaxLifetime    = "mariadb.conn_max_lifetime"
+
+	redisURL = "redis.url"
+	redisPwd = "redis.pwd"
 )
 
 // Manager represents the app configuration manager
@@ -99,6 +102,16 @@ func (m *Manager) MariaDBConnMaxLifetime() time.Duration {
 	return m.CfgReader.GetDuration(mariaDBConnMaxLifetime)
 }
 
+// RedisURL retrieves the redis database url connection string
+func (m *Manager) RedisURL() string {
+	return m.CfgReader.GetString(redisURL)
+}
+
+// RedisPassword retrieves the redis database password
+func (m *Manager) RedisPassword() string {
+	return m.CfgReader.GetString(redisPwd)
+}
+
 // setDefaults sets application default configs
 func (m *Manager) setDefaults() {
 	m.CfgReader.SetDefault(appListen, "0.0.0.0:8080")
@@ -116,6 +129,8 @@ func (m *Manager) setDefaults() {
 func (m *Manager) requiredProps() map[string]func() string {
 	return map[string]func() string{
 		mariaDBURL: m.MariaDBUrl,
+		redisURL: m.RedisURL,
+		redisPwd: m.RedisPassword,
 	}
 }
 

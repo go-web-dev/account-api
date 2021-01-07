@@ -15,7 +15,7 @@ services:
       - "3306:3306"
 
   redis:
-    image: redis
+    image: redis:6.2-rc
     restart: always
     ports:
       - "6379:6379"

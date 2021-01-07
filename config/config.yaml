@@ -15,3 +15,7 @@ mariadb:
   max_open_connections: 100
   max_idle_connections: 10
   conn_max_lifetime: 120s
+
+redis:
+  url: localhost:6379
+  pwd: pwd

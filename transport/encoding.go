@@ -70,6 +70,13 @@ func toHTTPError(err error) models.HTTPError {
 			Message: e.Message,
 		}
 
+	case models.ServiceNotAvailableError:
+		return models.HTTPError{
+			Code:    http.StatusServiceUnavailable,
+			Type:    ServiceErrorType,
+			Message: e.Error(),
+		}
+
 	default:
 		return models.HTTPError{
 			Code:    http.StatusInternalServerError,
