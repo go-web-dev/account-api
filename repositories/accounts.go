@@ -4,11 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"log"
-	"math/big"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -25,6 +21,7 @@ type DBDriver interface {
 	Close() error
 }
 
+// CacheDriver represents the application cache driver
 type CacheDriver interface {
 	Get(ctx context.Context, key string) *redis.StringCmd
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
@@ -46,7 +43,13 @@ func NewAccounts(db DBDriver, cache CacheDriver) Accounts {
 	return repo
 }
 
+// GetPrivateKey fetches the existing private key or creates a new one
 func (repo Accounts) GetPrivateKey() (*rsa.PrivateKey, error) {
+	// generate new private key on each app startup
+	// save the old key and the new key and only sign with the new key in Redis
+	// save all public keys under 'keys' in Redis
+	// decided whether key set needs to return the entire *jwk.Set aka the entire public key info
+
 	logger := logging.Logger
 	ctx := context.Background()
 	bs, err := repo.cache.Get(ctx, redisPrivateKey).Bytes()
@@ -54,31 +57,42 @@ func (repo Accounts) GetPrivateKey() (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 	if len(bs) != 0 {
-		jwkKey, err := jwk.ParseKey(bs)
+		//jwkKey, err := jwk.ParseKey(bs)
+		//if err != nil {
+		//	return nil, err
+		//}
+
+		key := jwk.NewRSAPrivateKey()
+		err = json.Unmarshal(bs, &key)
 		if err != nil {
 			return nil, err
 		}
 
-		b, _ := json.Marshal(jwkKey)
-		fmt.Println("JWK", string(b))
-
-		kk := map[string]string{}
-		json.Unmarshal(b, &kk)
-		fmt.Println("D BEFORE:", kk["d"])
-
-		d, err := base64.RawURLEncoding.DecodeString(kk["d"])
+		var privateKey rsa.PrivateKey
+		err = key.Raw(&privateKey)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
-		// use q and p for private key
-		// use dp dq and qi for precomputed values
-		kkk := rsa.PrivateKey{
-			D: new(big.Int).SetBytes(d),
-		}
-		kkk.Precompute()
-		fmt.Println("D:", kkk.D)
+		return &privateKey, nil
 
-		return nil, nil
+		//b, _ := json.Marshal(jwkKey)
+		//fmt.Println("JWK", string(b))
+		//
+		//kk := map[string]string{}
+		//json.Unmarshal(b, &kk)
+		//fmt.Println("D BEFORE:", kk["d"])
+		//
+		//d, err := base64.RawURLEncoding.DecodeString(kk["d"])
+		//if err != nil {
+		//	log.Fatal(err)
+		//}
+		//// use q and p for private key
+		//// use dp dq and qi for precomputed values
+		//kkk := rsa.PrivateKey{
+		//	D: new(big.Int).SetBytes(d),
+		//}
+		//kkk.Precompute()
+		//fmt.Println("D:", kkk.D)
 	}
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {

@@ -129,8 +129,8 @@ func (m *Manager) setDefaults() {
 func (m *Manager) requiredProps() map[string]func() string {
 	return map[string]func() string{
 		mariaDBURL: m.MariaDBUrl,
-		redisURL: m.RedisURL,
-		redisPwd: m.RedisPassword,
+		redisURL:   m.RedisURL,
+		redisPwd:   m.RedisPassword,
 	}
 }
 

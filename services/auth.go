@@ -4,6 +4,11 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"github.com/github.com/steevehook/account-api/models"
+	"github.com/lestrrat-go/jwx/jwa"
+	"github.com/lestrrat-go/jwx/jwk"
+	"github.com/lestrrat-go/jwx/jws"
+	"github.com/lestrrat-go/jwx/jwt"
+	"log"
 )
 
 // AccountsRepository represents the accounts repository
@@ -40,7 +45,7 @@ func (s Auth) Signup(credentials models.Credentials) (models.TokenResponse, erro
 	}
 	fmt.Println(key)
 
-	//token := jwt.New()
+	token := jwt.New()
 
 	//bs, _ := json.Marshal(token)
 	//signed, err := jws.Sign(bs, jwa.RS256, key, jws.WithHeaders(jws.NewHeaders()))
@@ -68,14 +73,14 @@ func (s Auth) Signup(credentials models.Credentials) (models.TokenResponse, erro
 	//}
 	//fmt.Println("jwt", string(signed))
 
-	//jwkKey, err := jwk.New(key)
-	//if err != nil {
-	//	log.Printf("failed to create JWK key: %s", err)
-	//}
-	//err = jwk.AssignKeyID(jwkKey, jws.WithHeaders(jws.NewHeaders()))
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	jwkKey, err := jwk.New(key)
+	if err != nil {
+		log.Printf("failed to create JWK key: %s", err)
+	}
+	err = jwk.AssignKeyID(jwkKey, jws.WithHeaders(jws.NewHeaders()))
+	if err != nil {
+		log.Fatal(err)
+	}
 	//
 	//ss := jwk.Set{Keys: []jwk.Key{jwkKey}}
 	//jsonbuf, err := json.MarshalIndent(ss, "", "  ")
@@ -85,13 +90,13 @@ func (s Auth) Signup(credentials models.Credentials) (models.TokenResponse, erro
 	//
 	//os.Stdout.Write(jsonbuf)
 	//
-	//signed, err := jwt.Sign(token, jwa.RS256, jwkKey)
-	//if err != nil {
-	//	log.Printf("failed to sign token: %s", err)
-	//}
+	signed, err := jwt.Sign(token, jwa.RS256, jwkKey)
+	if err != nil {
+		log.Printf("failed to sign token: %s", err)
+	}
 	//fmt.Println("kid", jwkKey.KeyID())
 	//fmt.Println("kid", jwkKey.PrivateParams())
-	//fmt.Println("jwk", string(signed))
+	fmt.Println("jwk", string(signed))
 
 	return models.TokenResponse{}, nil
 }

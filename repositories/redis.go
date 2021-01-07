@@ -9,11 +9,13 @@ import (
 	"github.com/github.com/steevehook/account-api/logging"
 )
 
+// RedisSettings represents the redis client settings
 type RedisSettings struct {
 	URL      string
 	Password string
 }
 
+// NewRedisDriver creates a new instance of redis client
 func NewRedisDriver(settings RedisSettings) (*redis.Client, error) {
 	logger := logging.Logger
 	client := redis.NewClient(&redis.Options{
