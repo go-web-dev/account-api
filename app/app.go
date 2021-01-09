@@ -56,8 +56,9 @@ func Init(configPath string) (*App, error) {
 		return nil, err
 	}
 
-	accountsRepo := repositories.NewAccounts(mariaDB, redisDB)
-	authService := services.NewAuth(accountsRepo)
+	accountsRepo := repositories.NewAccounts(mariaDB)
+	keysRepo := repositories.NewKeys(redisDB)
+	authService := services.NewAuth(accountsRepo, keysRepo)
 
 	routerCfg := controllers.RouterConfig{
 		AuthSvc: authService,

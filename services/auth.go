@@ -3,30 +3,38 @@ package services
 import (
 	"crypto/rsa"
 	"fmt"
-	"github.com/github.com/steevehook/account-api/models"
+	"log"
+
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/lestrrat-go/jwx/jws"
 	"github.com/lestrrat-go/jwx/jwt"
-	"log"
+
+	"github.com/github.com/steevehook/account-api/models"
 )
 
-// AccountsRepository represents the accounts repository
+// AccountsRepository represents the Accounts repository
 type AccountsRepository interface {
+}
+
+// KeysRepository represents the Keys repository
+type KeysRepository interface {
 	GetPrivateKey() (*rsa.PrivateKey, error)
 }
 
 // NewAuth creates a new instance of Auth service
-func NewAuth(repo AccountsRepository) Auth {
+func NewAuth(accountsRepo AccountsRepository, keysRepo KeysRepository) Auth {
 	service := Auth{
-		repo: repo,
+		accountsRepo: accountsRepo,
+		keysRepo:     keysRepo,
 	}
 	return service
 }
 
 // Auth represents the authentication service
 type Auth struct {
-	repo AccountsRepository
+	accountsRepo AccountsRepository
+	keysRepo     KeysRepository
 }
 
 // Login logins the given user
@@ -39,11 +47,20 @@ func (s Auth) Signup(credentials models.Credentials) (models.TokenResponse, erro
 	// rotate the private key creation every 2h
 	// save the jwk new and old keys in Redis
 	// create new key when old one is expired
-	key, err := s.repo.GetPrivateKey()
+
+	// generate new private key on each app startup
+	// save the old key and the new key and only sign with the new key in Redis
+	// save all public keys under 'keys' aka *jwk.Set in Redis
+	// create a middleware library
+
+	// add client_id, client_secret, grant_type and refresh_token possibilities
+	// add refresh token rotation
+	// add refresh token throttling
+
+	key, err := s.keysRepo.GetPrivateKey()
 	if err != nil {
 		return models.TokenResponse{}, err
 	}
-	fmt.Println(key)
 
 	token := jwt.New()
 
