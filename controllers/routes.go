@@ -14,6 +14,7 @@ type AuthService interface {
 	loginner
 	logoutter
 	signupper
+	keySetGetter
 }
 
 // RouterConfig represents the application router config
@@ -40,6 +41,7 @@ func NewRouter(cfg RouterConfig) http.Handler {
 	router.Handler(http.MethodPost, "/login", routeWithBody(login(cfg.AuthSvc)))
 	router.Handler(http.MethodPost, "/signup", routeWithBody(signup(cfg.AuthSvc)))
 	router.Handler(http.MethodPost, "/logout", routeWithBody(logout(cfg.AuthSvc)))
+	router.Handler(http.MethodPost, "/keys", getKeySet(cfg.AuthSvc))
 	router.NotFound = route(NotFound())
 
 	return router

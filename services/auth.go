@@ -71,3 +71,7 @@ func (s Auth) Signup(ctx context.Context, credentials models.Credentials) (model
 // Logout logs out a specific user account
 func (s Auth) Logout() {
 }
+
+func (s Auth) GetKeySet(ctx context.Context) (jwk.Set, error) {
+	return s.keysRepo.GetKeySet(ctx)
+}
