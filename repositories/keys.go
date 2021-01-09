@@ -29,6 +29,7 @@ type CacheDriver interface {
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 	LPush(ctx context.Context, key string, values ...interface{}) *redis.IntCmd
 	LTrim(ctx context.Context, key string, start, stop int64) *redis.StatusCmd
+	LRange(ctx context.Context, key string, start, stop int64) *redis.StringSliceCmd
 	Close() error
 }
 
@@ -46,9 +47,8 @@ func NewKeys(cache CacheDriver) Keys {
 }
 
 // GetPrivateKey fetches the existing private key or creates a new one
-func (repo Keys) GetPrivateKey() (*rsa.PrivateKey, error) {
+func (repo Keys) GetPrivateKey(ctx context.Context) (jwk.RSAPrivateKey, error) {
 	logger := logging.Logger
-	ctx := context.Background()
 	privateJWKBytes, err := repo.cache.Get(ctx, redisPrivateKeyKey).Bytes()
 	if err != nil && err != redis.Nil {
 		return nil, err
@@ -59,13 +59,7 @@ func (repo Keys) GetPrivateKey() (*rsa.PrivateKey, error) {
 		if err != nil {
 			return nil, err
 		}
-		var rsaPrivateKey rsa.PrivateKey
-		err = key.Raw(&rsaPrivateKey)
-		if err != nil {
-			return nil, err
-		}
-
-		return &rsaPrivateKey, nil
+		return key, nil
 	}
 
 	rsaPrivateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -90,7 +84,28 @@ func (repo Keys) GetPrivateKey() (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	return rsaPrivateKey, nil
+	return privateJWK, nil
+}
+
+// GetKeySet fetches public jwk key set
+func (repo Keys) GetKeySet(ctx context.Context) (jwk.Set, error) {
+	logger := logging.Logger
+	res, err := repo.cache.LRange(ctx, redisKeySetKey, 0, redisKeySetCap).Result()
+	if err != nil {
+		logger.Error("could not fetch public jwk key set", zap.Error(err))
+		return jwk.Set{}, err
+	}
+
+	var keys []jwk.Key
+	for _, k := range res {
+		key, err := jwk.ParseKey([]byte(k))
+		if err != nil {
+			logger.Error("could not parse jwk key", zap.Error(err))
+			return jwk.Set{}, err
+		}
+		keys = append(keys, key)
+	}
+	return jwk.Set{Keys: keys}, nil
 }
 
 func (repo Keys) newJWKRSAKeys(privateKey *rsa.PrivateKey) (jwk.RSAPrivateKey, jwk.RSAPublicKey, error) {

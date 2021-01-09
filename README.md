@@ -10,3 +10,8 @@ This application is a fully featured REST API written in Go
 
 - Golang
 - MariaDB
+
+### Resources
+
+[RFC7517 - JSON Web Keys](https://tools.ietf.org/html/rfc7517)
+[RFC7519 - JSON Web Token](https://tools.ietf.org/html/rfc7519)

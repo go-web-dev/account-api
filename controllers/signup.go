@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -11,7 +12,7 @@ import (
 )
 
 type signupper interface {
-	Signup(models.Credentials) (models.TokenResponse, error)
+	Signup(context.Context, models.Credentials) (models.TokenResponse, error)
 }
 
 func signup(service signupper) http.Handler {
@@ -25,7 +26,7 @@ func signup(service signupper) http.Handler {
 			return
 		}
 
-		res, err := service.Signup(credentials)
+		res, err := service.Signup(r.Context(), credentials)
 		if err != nil {
 			logger.Error("could not signup the current user", zap.Error(err))
 			transport.SendHTTPError(w, err)

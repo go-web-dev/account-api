@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/go-redis/redis/v8 v8.4.4
+	github.com/google/uuid v1.1.1
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/justinas/alice v1.2.0
 	github.com/lestrrat-go/jwx v1.0.6
