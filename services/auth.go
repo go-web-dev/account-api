@@ -72,6 +72,7 @@ func (s Auth) Signup(ctx context.Context, credentials models.Credentials) (model
 func (s Auth) Logout() {
 }
 
+// GetKeySet fetches the public jwk key set
 func (s Auth) GetKeySet(ctx context.Context) (jwk.Set, error) {
 	return s.keysRepo.GetKeySet(ctx)
 }

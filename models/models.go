@@ -20,13 +20,15 @@ type Account struct {
 	ModifiedAt time.Time `json:"modified_at" db:"modified_at"`
 }
 
+// JWT represents a jwt wrapper
 type JWT jwt.Token
 
+// NewJWT creates a new JWT wrapper type
 func NewJWT() JWT {
 	token := JWT(jwt.New())
 	_ = token.Set(jwt.IssuedAtKey, time.Now().UTC().Unix())
 	_ = token.Set(jwt.IssuerKey, "account-api-srv")
 	_ = token.Set(jwt.JwtIDKey, uuid.New())
-	_ = token.Set(jwt.ExpirationKey, time.Now().Add(time.Minute * 2).UTC().Unix())
+	_ = token.Set(jwt.ExpirationKey, time.Now().Add(time.Minute*2).UTC().Unix())
 	return token
 }
