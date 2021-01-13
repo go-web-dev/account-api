@@ -144,6 +144,11 @@ func (repo Keys) setHeaders(key jwk.Key) error {
 		logger.Error("could not set alg field for jwk key", zap.Error(err))
 		return err
 	}
+	err = key.Set(jwk.KeyUsageKey, jwk.ForSignature)
+	if err != nil {
+		logger.Error("could not set sig field for jwk key", zap.Error(err))
+		return err
+	}
 	return nil
 }
 

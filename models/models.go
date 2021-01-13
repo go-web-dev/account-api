@@ -30,5 +30,6 @@ func NewJWT() JWT {
 	_ = token.Set(jwt.IssuerKey, "account-api-srv")
 	_ = token.Set(jwt.JwtIDKey, uuid.New())
 	_ = token.Set(jwt.ExpirationKey, time.Now().Add(time.Minute*2).UTC().Unix())
+	_ = token.Set(jwt.NotBeforeKey, time.Now().Add(time.Second*3).UTC().Unix())
 	return token
 }
